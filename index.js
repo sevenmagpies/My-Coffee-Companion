@@ -4,7 +4,7 @@ const Alexa  =  require('alexa-sdk');
 const APP_ID = undefined;
 
 const SKILL_NAME = 'My Coffee Companion';
-const OPENING_MESSAGE = "I can help you learn more about coffee. What would you like to know?', 'Tell me a coffee and I can tell you more about it. ";
+const OPENING_MESSAGE = 'I can help you learn more about coffee. What would you like to know?';
 const HELP_MESSAGE = 'You can ask me about core coffees by saying tell me about Sumatra, or you can say exit... What can I help you with?';
 const HELP_REPROMPT = 'What can I help you with?';
 const STOP_MESSAGE = 'Goodbye!';
@@ -123,39 +123,21 @@ const coffeeData = [
 
 
 
-
 const handlers = {
     'LaunchRequest': function () {
-        this.emit(':ask', OPENING_MESSAGE);
-    },
-        'Unhandled': function () {
-        this.emit(':ask', HELP_MESSAGE, HELP_MESSAGE);
+    this.response.speak(OPENING_MESSAGE)
+    .listen()
+    .cardRenderer('My Coffee Companion', OPENING_MESSAGE + 'Currently My Coffee Companion supports all core coffees that are available at Starbucks.');
+     //this.response.reprompt = {
+      //   outputspeech : HELP_REPROMPT
+    // };
+   this.response.shouldEndSession = true;
+    this.emit(':responseReady');
     },
 
-  'coffeeSummary': function() {
-      var coffeeSlot = this.event.request.intent.slots.coffeeName.value;
-      let currentCoffee = getCoffeeKnowledge(coffeeData, 'coffeeName', coffeeSlot.toUpperCase()).summary;
-      if (coffeeSlot){
-        this.response.speak(currentCoffee);
-      } 
-            
-      this.response.cardRenderer(SKILL_NAME);
-      this.emit(':responseReady');
-  }, 
-    // 'coffeeInfo': function () {
-    //     const factArr = coffeeData.coffeeName;
-    //     const randomFact = factArr;
-    //     const speechOutput = randomFact;
-
-    //     this.response.cardRenderer(SKILL_NAME, randomFact);
-    //     this.response.speak(speechOutput);
-    //     this.emit(':responseReady');
-    // },
     'AMAZON.HelpIntent': function () {
-        const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
 
-        this.response.speak(speechOutput).listen(reprompt);
+        this.response.speak(HELP_MESSAGE).listen(HELP_REPROMPT);
         this.emit(':responseReady');
     },
     'AMAZON.CancelIntent': function () {
@@ -166,7 +148,26 @@ const handlers = {
         this.response.speak(STOP_MESSAGE);
         this.emit(':responseReady');
     },
+    'AMAZON.FallbackIntent': function () {
+        this.response.speak(HELP_MESSAGE).listen(HELP_REPROMPT);
+    
+        this.emit(':responseReady');
+    
+      },
+    
+      'coffeeSummary': function() {
+      let coffeeSlot = this.event.request.intent.slots.coffeeName.value;
+      let currentCoffee = getCoffeeKnowledge(coffeeData, 'coffeeName', coffeeSlot.toUpperCase()).summary;
+      if (coffeeSlot){
+        this.response.speak(currentCoffee).cardRenderer('My Coffee Companion', currentCoffee);
+        
+        this.emit(':responseReady');
+      } 
+  }, 
+
 };
+
+
 
 exports.handler = function (event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
